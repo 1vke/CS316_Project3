@@ -17,7 +17,6 @@ public class FileServer {
 
     public static void main(String[] args) {
         int port = 3000;
-        // Create the directory for server files if it doesn't exist
         new File(FILE_DIRECTORY).mkdirs();
 
         try (ServerSocketChannel channel = ServerSocketChannel.open()) {
@@ -27,7 +26,6 @@ public class FileServer {
             while (true) {
                 SocketChannel socketChannel = channel.accept();
                 System.out.println("Accepted connection from: " + socketChannel.getRemoteAddress());
-                // Handle each client in a new thread
                 new Thread(new ClientHandler(socketChannel)).start();
             }
         } catch (IOException e) {
@@ -51,12 +49,10 @@ public class FileServer {
                 if (bytesRead == -1) return;
 
                 buffer.flip();
-                // This assumes the initial command is smaller than the buffer and sent in one go.
                 String request = StandardCharsets.UTF_8.decode(buffer).toString().trim(); 
                 String[] parts = request.split("%");
                 String command = parts[0];
 
-                // Use a traditional switch for more complex logic per case
                 switch (command) {
                     case "list" -> clientChannel.write(ByteBuffer.wrap(handleList().getBytes(StandardCharsets.UTF_8)));
                     case "delete" -> clientChannel.write(ByteBuffer.wrap(handleDelete(parts).getBytes(StandardCharsets.UTF_8)));
@@ -109,12 +105,10 @@ public class FileServer {
             String filename = parts[1];
             File fileToSave = new File(FILE_DIRECTORY, filename);
 
-            // Signal client that server is ready to receive the file
             clientChannel.write(ByteBuffer.wrap("READY".getBytes(StandardCharsets.UTF_8)));
 
             try (RandomAccessFile file = new RandomAccessFile(FILE_DIRECTORY + "/" + filename, "rw");
                  FileChannel fileChannel = file.getChannel()) {
-                // Clear any existing content
                 file.setLength(0);
                 ByteBuffer buffer = ByteBuffer.allocate(8192);
                 int bytesRead;
@@ -123,12 +117,10 @@ public class FileServer {
                     fileChannel.write(buffer);
                     buffer.compact();
                 }
-                // After file transfer is complete, send success message
                 clientChannel.write(ByteBuffer.wrap("SUCCESS: Upload complete.".getBytes(StandardCharsets.UTF_8)));
             } catch (IOException e) {
-                // Attempt to send an error message back to the client
                 clientChannel.write(ByteBuffer.wrap("ERROR: Server failed during upload.".getBytes(StandardCharsets.UTF_8)));
-                fileToSave.delete(); // Clean up partially uploaded file
+                fileToSave.delete();
             }
         }
 
@@ -143,7 +135,6 @@ public class FileServer {
                 return;
             }
 
-            // Send success status code before sending the file
             clientChannel.write(ByteBuffer.wrap("SUCCESS".getBytes(StandardCharsets.UTF_8)));
 
             try (RandomAccessFile raf = new RandomAccessFile(file, "r");

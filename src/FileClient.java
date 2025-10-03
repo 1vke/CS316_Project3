@@ -21,7 +21,7 @@ public class FileClient {
 
         String serverIP = args[0];
         int serverPort = Integer.parseInt(args[1]);
-        new File(DOWNLOAD_DIRECTORY).mkdirs(); // Create download directory
+        new File(DOWNLOAD_DIRECTORY).mkdirs();
 
         Scanner scnr = new Scanner(System.in);
         List<String> commandArgs;
@@ -41,19 +41,16 @@ public class FileClient {
                 commandArgs = Arrays.stream(userInput.split("%")).toList();
                 command = commandArgs.getFirst();
 
-                // Send command to server
                 ByteBuffer requestBuffer = ByteBuffer.wrap(userInput.getBytes(StandardCharsets.UTF_8));
                 channel.write(requestBuffer);
 
                 if (command.equalsIgnoreCase("upload")) {
                     handleUpload(channel, commandArgs);
                 } else {
-                    // For other commands, read the response
                     ByteBuffer responseBuffer = ByteBuffer.allocate(8192);
                     if (command.equalsIgnoreCase("download")) {
                         handleDownload(channel, responseBuffer, commandArgs);
                     } else {
-                        // Handle simple text responses
                         int bytesRead = channel.read(responseBuffer);
                         if (bytesRead > 0) {
                             responseBuffer.flip();
@@ -84,12 +81,10 @@ public class FileClient {
         File file = new File(localFilename);
         if (!file.exists()) {
             System.out.println("Error: File not found locally: " + localFilename);
-            // The server is waiting for a "READY" response, but we can't send a file.
-            // The connection will be closed by the try-with-resources block.
+
             return;
         }
 
-        // Wait for server to be ready
         ByteBuffer readyBuffer = ByteBuffer.allocate(1024);
         int bytesRead = channel.read(readyBuffer);
         if (bytesRead <= 0) {
@@ -116,10 +111,8 @@ public class FileClient {
                 buffer.compact();
             }
         }
-        // Shutdown output to signal end of file transfer to the server
         channel.shutdownOutput();
 
-        // Wait for final confirmation from server
         ByteBuffer finalResponseBuffer = ByteBuffer.allocate(1024);
         bytesRead = channel.read(finalResponseBuffer);
         if (bytesRead > 0) {
@@ -139,7 +132,6 @@ public class FileClient {
         String filename = commandArgs.get(1);
         String localFilePath = DOWNLOAD_DIRECTORY + "/" + filename;
 
-        // First, read the status from the server
         int bytesRead = channel.read(buffer);
         if (bytesRead <= 0) {
             System.out.println("Server did not respond to download request.");
@@ -147,7 +139,7 @@ public class FileClient {
         }
         buffer.flip();
         String response = StandardCharsets.UTF_8.decode(buffer).toString();
-        buffer.compact(); // Prepare buffer for file content
+        buffer.compact();
 
         if (response.startsWith("ERROR:")) {
             System.out.println("Server error: " + response.trim());
@@ -160,7 +152,7 @@ public class FileClient {
         try (RandomAccessFile file = new RandomAccessFile(localFilePath, "rw");
              FileChannel fileChannel = file.getChannel()) {
             System.out.println("Downloading file to: " + localFilePath);
-            file.setLength(0); // Clear file in case it exists
+            file.setLength(0);
             while ((bytesRead = channel.read(buffer)) > 0) {
                 buffer.flip();
                 fileChannel.write(buffer);
