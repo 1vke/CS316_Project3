@@ -1,0 +1,43 @@
+CS316 Project 3: Design & Implementation of a TCP File Service
+Learning objectives:
+1. Implement the server-client architecture.
+2. Design and implement a file transfer protocol.
+3. Apply the TCP byte stream model to implement reliable data transfer.
+What to submit:
+1. The java source files.
+Each team will just need to submit one copy. Please be sure to add a submission note
+noting the names of both team members.
+Instructions:
+1. The file client should provide six commands to users, as follows:
+a. List: let user see a list of files available on the server
+b. Delete: let user delete a file on the server
+c. Rename: let user rename a file on the server
+d. Download: let user download a file from the server
+e. Upload: let user upload a file to the server.
+f. Quit: let user quits the client program.
+Note that the user only operates the client program, and not the server.
+See below for an example flowchart for the “delete” command. In this example, the
+letter “D” is used to code the “delete” command and letters “S” and “F” are used as the
+server’s status codes to indicate whether the deletion was successful or not. This is just
+an example, and you may code the commands and status codes differently.
+For each command, the server should first send a status code to the client, to indicate
+whether the request operation has been completed successfully. For the “list” or
+“download” operations, the server should then send the requested list or file to the
+client.
+2. The client program requires two command-line arguments to run: the first one is the IP
+address of the server (if the server runs on the same machine as the client, use
+localhost), and the second one is the port number the server runs on.
+3. Always run the server program first before running the client program – the client will
+try to connect to the server, so make sure the server is ready to accept incoming TCP
+connection requests.
+4. The final testing needs to be done with the server and the client running on two
+different computers.
+Grading:
+This project is worth a total of 100 points. The grading of this project will be demo based –
+each team will give a live demonstration of your project and run several test cases. Each
+test case carries a certain number of points. The details of the test cases and rubrics will be
+provided separately and ahead of the demo session.
+• Demo attendance is required. You will not receive any points of this project if you fail to
+attend the demo session.
+• Partial credit: If your implementation is only partially correct, you will receive partial
+credit proportional to the level of functionality achieved.

@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -9,7 +8,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class FileServer {
@@ -111,8 +109,7 @@ public class FileServer {
                  FileChannel fileChannel = file.getChannel()) {
                 file.setLength(0);
                 ByteBuffer buffer = ByteBuffer.allocate(8192);
-                int bytesRead;
-                while ((bytesRead = clientChannel.read(buffer)) > 0) {
+                while ((clientChannel.read(buffer)) > 0) {
                     buffer.flip();
                     fileChannel.write(buffer);
                     buffer.compact();

@@ -29,7 +29,7 @@ public class FileClient {
         String userInput;
 
         do {
-            System.out.print("Enter command (list, delete, rename, download, upload, quit): ");
+            System.out.print("Enter command (list, delete%<file>, rename%<old>%<new>, download%<file>, upload%<file>, quit): ");
             userInput = scnr.nextLine();
             if (userInput.equalsIgnoreCase("quit")) {
                 command = "quit";
@@ -44,26 +44,28 @@ public class FileClient {
                 ByteBuffer requestBuffer = ByteBuffer.wrap(userInput.getBytes(StandardCharsets.UTF_8));
                 channel.write(requestBuffer);
 
-                if (command.equalsIgnoreCase("upload")) {
-                    handleUpload(channel, commandArgs);
-                } else {
-                    ByteBuffer responseBuffer = ByteBuffer.allocate(8192);
-                    if (command.equalsIgnoreCase("download")) {
+                switch (command.toLowerCase()) {
+                    case "upload" -> handleUpload(channel, commandArgs);
+                    case "download" -> {
+                        ByteBuffer responseBuffer = ByteBuffer.allocate(8192);
                         handleDownload(channel, responseBuffer, commandArgs);
-                    } else {
+                    }
+                    case "list", "delete", "rename" -> {
+                        ByteBuffer responseBuffer = ByteBuffer.allocate(8192);
                         int bytesRead = channel.read(responseBuffer);
                         if (bytesRead > 0) {
                             responseBuffer.flip();
                             String response = StandardCharsets.UTF_8.decode(responseBuffer).toString();
                             System.out.println("Server response:\n" + response);
                         } else {
-                            System.out.println("Server did not send a response.");
+                            System.out.println("Server did not send a response or closed the connection.");
                         }
                     }
+                    default -> System.out.println("Unknown command. The server might provide an error message.");
                 }
 
             } catch (Exception e) {
-                System.err.printf("Client error: %s\n", e.getMessage());
+                System.err.printf("Client error: %s%n", e.getMessage());
                 e.printStackTrace();
             }
         } while (!command.equalsIgnoreCase("quit"));
@@ -132,8 +134,7 @@ public class FileClient {
         String filename = commandArgs.get(1);
         String localFilePath = DOWNLOAD_DIRECTORY + "/" + filename;
 
-        int bytesRead = channel.read(buffer);
-        if (bytesRead <= 0) {
+        if (channel.read(buffer) <= 0) {
             System.out.println("Server did not respond to download request.");
             return;
         }
@@ -153,7 +154,7 @@ public class FileClient {
              FileChannel fileChannel = file.getChannel()) {
             System.out.println("Downloading file to: " + localFilePath);
             file.setLength(0);
-            while ((bytesRead = channel.read(buffer)) > 0) {
+            while ((channel.read(buffer)) > 0) {
                 buffer.flip();
                 fileChannel.write(buffer);
                 buffer.compact();
