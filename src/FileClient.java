@@ -79,11 +79,10 @@ public class FileClient {
             System.out.println("Usage: upload%<local_filename>");
             return;
         }
-        String localFilename = commandArgs.get(1);
-        File file = new File(localFilename);
+        String filename = commandArgs.get(1);
+        File file = new File(DOWNLOAD_DIRECTORY, filename);
         if (!file.exists()) {
-            System.out.println("Error: File not found locally: " + localFilename);
-
+            System.out.println("Error: File not found in '" + DOWNLOAD_DIRECTORY + "' directory: " + filename);
             return;
         }
 
@@ -101,7 +100,7 @@ public class FileClient {
             return;
         }
 
-        System.out.println("Server is ready. Uploading file: " + localFilename);
+        System.out.println("Server is ready. Uploading file: " + file.getPath());
         try (RandomAccessFile raf = new RandomAccessFile(file, "r");
              FileChannel fileChannel = raf.getChannel()) {
             ByteBuffer buffer = ByteBuffer.allocate(8192);
